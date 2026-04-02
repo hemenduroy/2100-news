@@ -1,0 +1,54 @@
+{
+  "name": "2100-news",
+  "version": "1.0.0",
+  "description": "If Humanity skipped a Century - 2100",
+  "private": true,
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0",
+    "@testing-library/jest-dom": "^5.16.4",
+    "@testing-library/react": "^13.3.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@vercel/og": "^0.6.8",
+    "axios": "^1.4.0",
+    "cors": "^2.8.5",
+    "date-fns": "^2.30.0",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "framer-motion": "^12.23.12",
+    "react": "^18.2.0",
+    "react-calendar": "^4.6.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^7.8.0",
+    "react-scripts": "5.0.1",
+    "twitter-api-v2": "^1.24.0",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "build:vercel": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "dev:og": "node scripts/dev-og-server.js",
+    "tweet:og": "node scripts/tweet-og.js"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "proxy": "https://2100-news.vercel.app"
+}

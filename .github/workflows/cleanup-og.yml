@@ -1,0 +1,27 @@
+name: Cleanup OG Storage
+
+on:
+  # schedule disabled to save cost
+  # schedule:
+  #   - cron: '0 3 * * 0' # weekly at 03:00 UTC Sundays
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install deps
+        run: npm ci
+      - name: Cleanup old OG folders (keep today & yesterday; keep root latest pngs)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          node scripts/cleanup-og-storage.js
+

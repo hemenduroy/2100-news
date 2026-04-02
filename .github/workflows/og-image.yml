@@ -1,0 +1,78 @@
+name: Generate OG Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date (YYYY-MM-DD). Defaults to today.'
+        required: false
+  repository_dispatch:
+    types: [backfill-news]
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install deps
+        run: npm ci
+      - name: Generate and upload OG image (square)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          DATE_ARG=""
+          if [ -n "${{ github.event.inputs.date }}" ]; then DATE_ARG="--date=${{ github.event.inputs.date }}"; fi
+          if [ -n "${{ github.event.client_payload.date }}" ]; then DATE_ARG="--date=${{ github.event.client_payload.date }}"; fi
+          # Determine run label 1 or 2 based on UTC hour (approximate)
+          HOUR=$(date -u +%H)
+          RUN="1"; if [ "$HOUR" -ge 12 ]; then RUN="2"; fi
+          node scripts/generate-og-to-storage.js --ratio=square --daily-run=$RUN $DATE_ARG | tee og-urls.json
+      - name: Tweet latest OG image
+        if: ${{ success() }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          TWITTER_APP_KEY: ${{ secrets.TWITTER_APP_KEY }}
+          TWITTER_APP_SECRET: ${{ secrets.TWITTER_APP_SECRET }}
+          TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          TWITTER_ACCESS_SECRET: ${{ secrets.TWITTER_ACCESS_SECRET }}
+        run: |
+          DATE_ARG=""
+          if [ -n "${{ github.event.inputs.date }}" ]; then DATE_ARG="--date=${{ github.event.inputs.date }}"; fi
+          if [ -n "${{ github.event.client_payload.date }}" ]; then DATE_ARG="--date=${{ github.event.client_payload.date }}"; fi
+          node scripts/tweet-og.js --ratio=square $DATE_ARG
+      - name: Generate and tweet up to 7 single headlines (portrait)
+        if: ${{ success() && github.event_name != 'repository_dispatch' }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TWITTER_APP_KEY: ${{ secrets.TWITTER_APP_KEY }}
+          TWITTER_APP_SECRET: ${{ secrets.TWITTER_APP_SECRET }}
+          TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          TWITTER_ACCESS_SECRET: ${{ secrets.TWITTER_ACCESS_SECRET }}
+        run: |
+          DATE_VAL="${{ github.event.inputs.date }}"
+          if [ -z "$DATE_VAL" ]; then DATE_VAL="${{ github.event.client_payload.date }}"; fi
+          if [ -z "$DATE_VAL" ]; then DATE_VAL=$(date -u +%F); fi
+          HOUR=$(date -u +%H)
+          RUN="1"; if [ "$HOUR" -ge 12 ]; then RUN="2"; fi
+          for i in 0 1 2 3 4 5 6; do
+            # Generate single image; if script prints skip, break
+            OUT=$(node scripts/generate-og-to-storage.js --ratio=portrait --date="$DATE_VAL" --daily-run=$RUN --single-index=$i || true)
+            echo "$OUT"
+            echo "$OUT" | grep -q '"skip": true' && break
+            # Tweet the single image
+            node scripts/tweet-og.js --ratio=portrait --date="$DATE_VAL" --single-index=$i
+            # Wait 60s to avoid rate limits
+            sleep 60
+          done
+      - name: Print URLs
+        run: |
+          cat og-urls.json | sed 's/.*/OG: &/'
+
+

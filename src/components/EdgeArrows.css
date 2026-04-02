@@ -1,0 +1,56 @@
+.edge-arrows { position: fixed; inset: 0; pointer-events: none; z-index: 20; }
+.edge-arrows.within-header { position: absolute; inset: auto; left: 0; right: 0; pointer-events: none; z-index: 5; }
+.edge-arrows.inline { position: static; inset: auto; pointer-events: none; z-index: auto; display: flex; justify-content: space-between; gap: 8px; width: 100%; }
+
+.edge-button {
+  position: absolute;
+  will-change: top, left;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px 0 0 10px;
+  background: rgba(0,0,0,0.0);
+  border: 2px solid currentColor;
+  color: currentColor;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.edge-left { border-radius: 10px; left: var(--edge-left, 16px); top: var(--edge-top, 140px); }
+.edge-right { border-radius: 10px; right: var(--edge-left, 16px); top: var(--edge-top, 140px); }
+.edge-arrows.inline .edge-button { position: relative; will-change: initial; }
+.edge-arrows.inline .edge-button:first-child { margin-left: 0; }
+.edge-arrows.inline .edge-button:last-child { margin-right: 0; }
+
+/* When placed within header/news area, position relative to section */
+.edge-arrows.within-header .edge-left,
+.edge-arrows.within-header .edge-right {
+  top: var(--edge-inset-top, 0px);
+}
+
+.edge-button:hover { opacity: 0.9; }
+
+.edge-button.disabled,
+.edge-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  filter: grayscale(100%);
+}
+
+/* Theme colors via currentColor */
+.edge-arrows.dark { color: #ffffff; }
+.edge-arrows.light { color: #000000; }
+
+@media (min-width: 769px) {
+  /* Hide on desktop; desktop already has header arrows */
+  .edge-arrows,
+  .edge-arrows.inline,
+  .edge-arrows.within-header {
+    display: none !important;
+  }
+}
+
+

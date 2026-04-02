@@ -1,0 +1,333 @@
+.news-card-container {
+  perspective: 1000px;
+  height: 100%;
+  width: 100%;
+  min-height: 300px;
+  display: flex;
+}
+
+.news-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  text-align: left;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  flex: 1;
+  opacity: 1; /* avoid full transparency to keep blur continuously engaged */
+}
+
+.news-card.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 12px;
+  padding: 2rem;
+  transition: all 0.3s ease;
+  will-change: backdrop-filter, transform, opacity;
+  transform: translateZ(0);
+  contain: paint;
+  display: flex;
+  flex-direction: column;
+  top: 0;
+  left: 0;
+  z-index: 1; /* content above pseudo blurred panel */
+}
+
+/* Blurred glass panel rendered via pseudo-element so it exists immediately on paint */
+.card-front::after,
+.card-back::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Front card (future news) determines the size */
+.card-front {
+  height: 100%;
+  min-height: 300px;
+  position: relative;
+  overflow: hidden; /* prevent front content from creating scrollbars */
+}
+
+/* Back card (original news) matches front card size */
+.card-back {
+  height: 100%;
+  min-height: 100%;
+  transform: rotateY(180deg);
+  overflow-y: auto;
+  max-height: 80vh;
+}
+
+.card-front::before,
+.card-back::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #ffffff, #cccccc, #ffffff);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card-front:hover::before,
+.card-back:hover::before {
+  opacity: 1;
+}
+
+/* Custom scrollbar for card back */
+.card-back::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-back::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.card-back::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.card-back::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Light mode scrollbar */
+.news-card-container.light .card-back::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.news-card-container.light .card-back::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.news-card-container.light .card-back::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Dark mode */
+.news-card-container.dark .card-front,
+.news-card-container.dark .card-back {
+  color: #ffffff;
+}
+
+.news-card-container.dark .card-front:hover,
+.news-card-container.dark .card-back:hover {
+  box-shadow: 0 20px 40px rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Light mode */
+.news-card-container.light .card-front,
+.news-card-container.light .card-back {
+  color: #000000;
+}
+
+/* Adjust pseudo-element theme variants */
+.news-card-container.light .card-front::after,
+.news-card-container.light .card-back::after {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.02) 100%);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.news-card-container.light .card-front:hover,
+.news-card-container.light .card-back:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.news-card-container.light .card-front::before,
+.news-card-container.light .card-back::before {
+  background: linear-gradient(90deg, #000000, #666666, #000000);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+}
+
+.article-category {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+.news-card-container.light .article-category {
+  background: rgba(0, 0, 0, 0.1);
+  color: #000000;
+}
+
+.article-category.original {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.news-card-container.light .article-category.original {
+  background: rgba(255, 193, 7, 0.3);
+  color: #e65100;
+  border: 1px solid rgba(255, 193, 7, 0.5);
+}
+
+.article-time {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  font-family: 'Space Mono', monospace;
+}
+
+.article-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 1rem;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.article-title.original-title {
+  color: #ffc107;
+  text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+}
+
+.news-card-container.light .article-title.original-title {
+  color: #e65100;
+  text-shadow: 0 0 10px rgba(230, 81, 0, 0.3);
+}
+
+.article-caption {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+  flex-grow: 1;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.article-caption.original-caption {
+  opacity: 0.8;
+  font-style: italic;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+.news-card-container.light .card-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.article-source {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.source-label {
+  opacity: 0.7;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.source-name {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.news-card-container.light .source-name {
+  color: #000000;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .card-front,
+  .card-back {
+    padding: 1.5rem;
+  }
+  
+  .article-title {
+    font-size: 1.3rem;
+  }
+  
+  .article-caption {
+    font-size: 0.9rem;
+  }
+  
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-front,
+  .card-back {
+    padding: 1rem;
+  }
+  
+  .article-title {
+    font-size: 1.2rem;
+  }
+  
+  .article-caption {
+    font-size: 0.85rem;
+  }
+  
+  .article-category {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.8rem;
+  }
+} 

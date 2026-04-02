@@ -1,0 +1,293 @@
+/* Base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Space Mono', 'Courier New', monospace;
+  line-height: 1.6;
+  transition: all 0.3s ease;
+}
+
+/* Dark mode (default) */
+body.dark-mode {
+  background: #000000;
+  color: #ffffff;
+}
+
+/* Light mode */
+body.light-mode {
+  background: #ffffff;
+  color: #000000;
+}
+
+.App {
+  min-height: 100vh;
+  transition: all 0.3s ease;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Instant background so card blur looks consistent before Vanta loads */
+.bg-fallback {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+}
+.bg-fallback.dark { background: #000000; }
+.bg-fallback.light { background: #ffffff; }
+
+.App.dark {
+  background: #000000;
+  color: #ffffff;
+}
+
+.App.light {
+  background: #ffffff;
+  color: #000000;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ffffff;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #cccccc;
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Main content */
+.main-content {
+  padding: 2rem 0;
+  min-height: calc(100vh - 120px);
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  position: relative;
+  z-index: 1; /* always above background */
+  /* Define fixed arrow alignment relative to content */
+  --edge-left: 16px;
+  --edge-top: 152px; /* under the news title; adjust if needed */
+}
+
+/* Simple transition wrapper for content (avoid full transparency to prevent blur blink) */
+.content-fader {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+.content-fader.fade-out {
+  opacity: 0.85; /* never fully transparent to keep backdrop-filter engaged */
+  transform: translateY(4px);
+}
+.content-fader.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Calendar overlay */
+.calendar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.calendar-container {
+  background: #1a1a1a;
+  border: 2px solid #ffffff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+/* Calendar styling */
+.future-calendar {
+  background: transparent !important;
+  border: none !important;
+  font-family: 'Space Mono', monospace !important;
+  color: #ffffff !important;
+}
+
+.future-calendar .react-calendar__tile {
+  background: transparent !important;
+  border: 1px solid #333333 !important;
+  color: #ffffff !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Disabled tiles (e.g., future days) */
+.future-calendar .react-calendar__tile:disabled {
+  opacity: 0.3 !important;
+  filter: grayscale(100%);
+  cursor: not-allowed !important;
+}
+
+.future-calendar .react-calendar__tile:hover {
+  background: #ffffff !important;
+  color: #000000 !important;
+  transform: scale(1.05) !important;
+}
+
+.future-calendar .react-calendar__tile--active {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+.future-calendar .react-calendar__tile--now {
+  background: #333333 !important;
+  color: #ffffff !important;
+}
+
+.future-calendar .react-calendar__navigation button {
+  background: transparent !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-size: 1.2rem !important;
+  font-weight: bold !important;
+  transition: all 0.3s ease !important;
+}
+
+.future-calendar .react-calendar__navigation button:hover {
+  background: #ffffff !important;
+  color: #000000 !important;
+  transform: scale(1.1) !important;
+}
+
+.future-calendar .react-calendar__month-view__weekdays {
+  background: transparent !important;
+  color: #cccccc !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+/* Light mode calendar adjustments */
+.App.light .calendar-overlay {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.App.light .calendar-container {
+  background: #ffffff;
+  border: 2px solid #000000;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.App.light .future-calendar {
+  color: #000000 !important;
+}
+
+.App.light .future-calendar .react-calendar__tile {
+  border: 1px solid #dddddd !important;
+  color: #000000 !important;
+}
+
+.App.light .future-calendar .react-calendar__tile:disabled {
+  opacity: 0.35 !important;
+  filter: grayscale(100%);
+  cursor: not-allowed !important;
+}
+
+.App.light .future-calendar .react-calendar__tile:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.App.light .future-calendar .react-calendar__tile--active {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.App.light .future-calendar .react-calendar__tile--now {
+  background: #dddddd !important;
+  color: #000000 !important;
+}
+
+.App.light .future-calendar .react-calendar__navigation button {
+  color: #000000 !important;
+}
+
+.App.light .future-calendar .react-calendar__navigation button:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.App.light .future-calendar .react-calendar__month-view__weekdays {
+  color: #666666 !important;
+}
+
+/* Responsive calendar */
+@media (max-width: 768px) {
+  .calendar-container {
+    padding: 1rem;
+    margin: 1rem;
+  }
+  
+  .future-calendar {
+    font-size: 0.9rem !important;
+  }
+  
+  .future-calendar .react-calendar__navigation button {
+    font-size: 1rem !important;
+  }
+}
+
+/* Animation utilities */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+} 

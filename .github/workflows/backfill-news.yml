@@ -1,0 +1,316 @@
+name: Backfill News for Specific Date
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date to backfill (YYYY-MM-DD format)'
+        required: true
+        type: string
+      mark_as_no_data:
+        description: 'Mark this date as having no data available'
+        required: false
+        type: boolean
+        default: false
+  repository_dispatch:
+    types: [backfill-news]
+
+jobs:
+  backfill-news:
+    name: Backfill News for ${{ github.event.inputs.date || github.event.client_payload.date || 'Unknown Date' }}
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Backfill news data
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        NEWSDATA_API_KEY: ${{ secrets.NEWSDATA_API_KEY }}
+        BACKFILL_DATE: ${{ github.event.inputs.date || github.event.client_payload.date }}
+        MARK_AS_NO_DATA: ${{ github.event.inputs.mark_as_no_data || github.event.client_payload.mark_as_no_data }}
+      run: |
+        # Create a temporary script to backfill news
+        cat > backfill-news.js << 'EOF'
+        const { createClient } = require('@supabase/supabase-js');
+        const axios = require('axios');
+        
+        const supabase = createClient(
+          process.env.SUPABASE_URL,
+          process.env.SUPABASE_ANON_KEY
+        );
+        
+        const BACKFILL_DATE = process.env.BACKFILL_DATE;
+        const MARK_AS_NO_DATA = process.env.MARK_AS_NO_DATA === 'true';
+        
+        // NewsData.io configuration
+        const NEWSDATA_API_KEY = process.env.NEWSDATA_API_KEY;
+        const NEWS_SOURCES = [
+          { id: 'yahoo', name: 'Yahoo News', category: 'General' },
+          { id: 'google', name: 'Google News', category: 'General' },
+          { id: 'bbc', name: 'BBC News', category: 'World' },
+          { id: 'cnn', name: 'CNN', category: 'World' }
+        ];
+        
+        // Rate limiting for OpenAI API (max 2 requests per minute)
+        let openAICallCount = 0;
+        let lastResetTime = Date.now();
+        const RATE_LIMIT_WINDOW = 60000; // 1 minute in milliseconds
+        const MAX_CALLS_PER_MINUTE = 2;
+        
+        const checkRateLimit = () => {
+          const now = Date.now();
+          
+          if (now - lastResetTime > RATE_LIMIT_WINDOW) {
+            openAICallCount = 0;
+            lastResetTime = now;
+          }
+          
+          if (openAICallCount >= MAX_CALLS_PER_MINUTE) {
+            const timeUntilReset = RATE_LIMIT_WINDOW - (now - lastResetTime);
+            throw new Error(`Rate limit exceeded. Try again in ${Math.ceil(timeUntilReset / 1000)} seconds.`);
+          }
+          
+          openAICallCount++;
+          return true;
+        };
+        
+        // Enhanced prompt for GPT API that creates truly futuristic and humorous scenarios
+        const FUTURISTIC_PROMPT = `You are a witty futuristic news editor from the year 2100. Transform this current news headline into an entertaining sci-fi scenario that could happen in 2100.
+
+        Original headline: "{headline}"
+        Original description: "{description}"
+
+        Create a futuristic version that:
+        1. Takes the core concept and extrapolates it 100 years into the future with wild imagination
+        2. Adds advanced sci-fi elements (AI consciousness, quantum teleportation, intergalactic travel, neural interfaces, etc.)
+        3. Makes it genuinely funny and entertaining - think "what if this happened in 2100?"
+        4. References the original news in a clever way that makes readers smile
+        5. Uses creative futuristic language and concepts
+        6. Keeps the original context recognizable but with a 2100 twist
+
+        Examples of good transformations:
+        - "Tesla recalls cars" → "Tesla Recalls Quantum Hover Cars After AI Drivers Develop Existential Crisis"
+        - "New iPhone released" → "Apple Launches Neural Interface Phone That Reads Your Dreams"
+        - "Climate summit" → "Global Leaders Meet on Mars to Discuss Terraforming Earth Back to Habitable State"
+
+        Format your response as:
+        TITLE: [creative futuristic title with humor]
+        CAPTION: [one witty sentence explaining the 2100 scenario while cleverly referencing the original news]`;
+        
+        // Transform headline using GPT API
+        const transformHeadline = async (headline, description = '') => {
+          try {
+            checkRateLimit();
+            
+            const prompt = FUTURISTIC_PROMPT
+              .replace('{headline}', headline)
+              .replace('{description}', description);
+            
+            const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+              model: 'gpt-4',
+              messages: [
+                {
+                  role: 'system',
+                  content: 'You are a witty futuristic news editor from 2100. You transform current news into humorous sci-fi scenarios while keeping the original context clear. Your responses should make readers think "haha, if this happened in 2100, this is what it would look like!"'
+                },
+                {
+                  role: 'user',
+                  content: prompt
+                }
+              ],
+              max_tokens: 300,
+              temperature: 0.8
+            }, {
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+              }
+            });
+            
+            const content = response.data.choices[0].message.content;
+            const titleMatch = content.match(/TITLE:\s*(.+)/);
+            const captionMatch = content.match(/CAPTION:\s*(.+)/);
+            
+            return {
+              title: titleMatch ? titleMatch[1].trim() : headline,
+              caption: captionMatch ? captionMatch[1].trim() : 'If Humanity skipped a Century...'
+            };
+          } catch (error) {
+            console.error('Error transforming headline:', error);
+            
+            if (error.message && error.message.includes('Rate limit exceeded')) {
+              console.log('⚠️ Rate limit hit, using fallback transformation');
+              return {
+                title: `${headline} (2100 Edition)`,
+                caption: `In the year 2100, this news would be even more amazing!`
+              };
+            }
+            
+            return {
+              title: headline,
+              caption: 'If Humanity skipped a Century...'
+            };
+          }
+        };
+        
+        // Fetch news from NewsData.io
+        const fetchNewsFromAPI = async () => {
+          try {
+            const response = await axios.get(`https://newsdata.io/api/1/news`, {
+              params: {
+                apikey: NEWSDATA_API_KEY,
+                language: 'en',
+                size: 10
+              }
+            });
+            
+            if (!response.data.results) {
+              return [];
+            }
+            
+            // Return top 10 most popular articles
+            const topArticles = response.data.results.slice(0, 10);
+            
+            // Show what sources we got
+            const sources = [...new Set(topArticles.map(article => article.source_name))];
+            
+            return topArticles;
+          } catch (error) {
+            return [];
+          }
+        };
+        
+        // Transform all headlines for articles
+        const transformHeadlines = async (articles) => {
+          const transformed = [];
+          
+          for (const article of articles) {
+            const originalTitle = article.title || '';
+            const description = article.description || article.content || '';
+            const url = article.link || '';
+            const publishedAt = article.pubDate || new Date().toISOString();
+            const sourceName = article.source_name || 'Unknown';
+            
+            const result = await transformHeadline(originalTitle, description);
+            transformed.push({
+              id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              originalTitle: originalTitle,
+              futuristicTitle: result.title,
+              futuristicCaption: result.caption,
+              source: sourceName,
+              category: 'General',
+              publishedAt: publishedAt,
+              link: url,
+              description: description
+            });
+            
+            // Add delay between API calls to respect rate limits
+            await new Promise(resolve => setTimeout(resolve, 30000)); // 30 seconds between calls
+          }
+          
+          return transformed;
+        };
+        
+        // Main function to backfill news
+        const backfillNews = async () => {
+          try {
+            if (MARK_AS_NO_DATA) {
+              const { error } = await supabase
+                .from('news')
+                .upsert({
+                  date: BACKFILL_DATE,
+                  articles: [],
+                  no_data: true,
+                  backfill_status: 'completed',
+                  updated_at: new Date().toISOString()
+                }, {
+                  onConflict: 'date'
+                });
+              
+              if (error) {
+                // Error marking as no data
+              }
+              
+              return;
+            }
+            
+            const articles = await fetchNewsFromAPI();
+            
+            if (articles.length === 0) {
+              const { error } = await supabase
+                .from('news')
+                .upsert({
+                  date: BACKFILL_DATE,
+                  articles: [],
+                  no_data: true,
+                  backfill_status: 'completed',
+                  updated_at: new Date().toISOString()
+                }, {
+                  onConflict: 'date'
+                });
+              
+              if (error) {
+                // Error marking as no data
+              }
+              
+              return;
+            }
+            
+            // Transform articles
+            const transformedArticles = await transformHeadlines(articles);
+            
+            // Save to Supabase with completed status
+            const { error } = await supabase
+              .from('news')
+              .upsert({
+                date: BACKFILL_DATE,
+                articles: transformedArticles,
+                no_data: false,
+                backfill_status: 'completed',
+                updated_at: new Date().toISOString()
+              }, {
+                onConflict: 'date'
+              });
+            
+            if (error) {
+              // Error saving to Supabase
+            }
+            
+            return transformedArticles;
+          } catch (error) {
+            // Set status to completed even on error
+            await supabase
+              .from('news')
+              .upsert({
+                date: BACKFILL_DATE,
+                backfill_status: 'completed',
+                updated_at: new Date().toISOString()
+              }, {
+                onConflict: 'date'
+              });
+            
+            throw error;
+          }
+        };
+        
+        // Run the backfill
+        backfillNews().then(() => {
+          process.exit(0);
+        }).catch((error) => {
+          process.exit(1);
+        });
+        EOF
+        
+        node backfill-news.js

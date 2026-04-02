@@ -1,0 +1,264 @@
+.news-container {
+  width: 100%;
+}
+
+.news-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.news-date {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  letter-spacing: 1px;
+}
+
+/* Dark mode */
+.news-grid.dark .news-date {
+  color: #ffffff;
+}
+
+/* Light mode */
+.news-grid.light .news-date {
+  color: #000000;
+}
+
+.news-count {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.9rem;
+  color: #888888;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+  padding: 2rem 0;
+  align-items: stretch;
+}
+
+/* Expose a CSS var for the top of the first row to position edge arrows */
+.news-grid::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 0;
+  width: 0;
+}
+
+/* Dark mode */
+.news-grid.dark {
+  color: #ffffff;
+}
+
+/* Light mode */
+.news-grid.light {
+  color: #000000;
+}
+
+/* Loading state */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid #ffffff;
+  border-top: 3px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.1rem;
+  color: #cccccc;
+  letter-spacing: 1px;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  padding: 2rem;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  letter-spacing: 2px;
+}
+
+.empty-message {
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 500px;
+  opacity: 0.8;
+}
+
+.empty-text {
+  color: #888;
+  font-size: 1.1rem;
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.backfill-section {
+  margin-top: 3rem; /* Increased margin to push button lower */
+  text-align: center;
+  min-height: 120px; /* Fixed height to prevent layout shift */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.backfill-text {
+  color: #888;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.backfill-button {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: transparent;
+}
+
+.backfill-button.dark {
+  border-color: #00ff88;
+  color: #00ff88;
+}
+
+.backfill-button.dark:hover:not(:disabled) {
+  background: #00ff88;
+  color: #000;
+}
+
+.backfill-button.light {
+  border-color: #00ff88;
+  color: #00ff88;
+}
+
+.backfill-button.light:hover:not(:disabled) {
+  background: #00ff88;
+  color: #000;
+}
+
+.backfill-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .news-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1rem 0;
+  }
+  
+  .news-date {
+    font-size: 1.3rem;
+  }
+  
+  .news-count {
+    font-size: 0.8rem;
+  }
+  
+  .loading-container,
+  .empty-state {
+    padding: 2rem 0;
+  }
+  
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .loading-text {
+    font-size: 0.9rem;
+  }
+  
+  .empty-title {
+    font-size: 1.3rem;
+  }
+  
+  .empty-message {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .news-grid {
+    gap: 1rem;
+  }
+  
+  .news-date {
+    font-size: 1.1rem;
+  }
+  
+  .news-count {
+    font-size: 0.75rem;
+  }
+  
+  .loading-spinner {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .loading-text {
+    font-size: 0.8rem;
+  }
+  
+  .empty-icon {
+    font-size: 3rem;
+  }
+  
+  .empty-title {
+    font-size: 1.2rem;
+  }
+  
+  .empty-message {
+    font-size: 0.8rem;
+  }
+} 
