@@ -12,6 +12,15 @@ Dark theme:
 
 ![2100 app — dark theme](docs/screenshots/app-dark.png)
 
+### Screen recording
+
+Browser playback (after this commit is on `main`):
+
+<video src="https://raw.githubusercontent.com/hemenduroy/2100-news/main/docs/videos/app-demo.mov" controls playsinline width="100%" style="max-width: 960px;"></video>
+
+Direct link (download or open in a new tab if the player does not show):  
+[app-demo.mov](https://raw.githubusercontent.com/hemenduroy/2100-news/main/docs/videos/app-demo.mov)
+
 ## Features
 
 - **Modern React App**: Built with React 18, hooks, and modern JavaScript
