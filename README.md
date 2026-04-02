@@ -12,14 +12,9 @@ Dark theme:
 
 ![2100 app — dark theme](docs/screenshots/app-dark.png)
 
-### Screen recording
+### Demo (first 17 seconds)
 
-Browser playback (after this commit is on `main`):
-
-<video src="https://raw.githubusercontent.com/hemenduroy/2100-news/main/docs/videos/app-demo.mov" controls playsinline width="100%" style="max-width: 960px;"></video>
-
-Direct link (download or open in a new tab if the player does not show):  
-[app-demo.mov](https://raw.githubusercontent.com/hemenduroy/2100-news/main/docs/videos/app-demo.mov)
+![Screen recording — 2100 app](docs/screenshots/app-demo.gif)
 
 ## Features
 
