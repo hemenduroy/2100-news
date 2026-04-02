@@ -2,6 +2,10 @@
 
 A modern React application that transforms current news headlines into futuristic scenarios from the year 2100. Built with Vercel, Supabase, and automated with GitHub Actions.
 
+## Demo
+
+![Screen recording — 2100 app](docs/screenshots/app-demo.gif)
+
 ## Screenshots
 
 Light theme:
@@ -11,10 +15,6 @@ Light theme:
 Dark theme:
 
 ![2100 app — dark theme](docs/screenshots/app-dark.png)
-
-### Demo (first 17 seconds)
-
-![Screen recording — 2100 app](docs/screenshots/app-demo.gif)
 
 ## Features
 
